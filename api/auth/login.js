@@ -38,8 +38,10 @@ export default async function handler(req, res) {
     }
 
     // 3. Gerar Token JWT
-    // Se não tiver JWT_SECRET no .env, usa um padrão (APENAS PARA DEV, NÃO USE EM PROD ASSIM)
-    const secret = process.env.JWT_SECRET || 'segredo-padrao-dev';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ message: 'JWT_SECRET not configured' });
+    }
     const token = jwt.sign(
       { id: user.id, role: user.role, name: user.name },
       secret,

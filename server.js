@@ -19,6 +19,8 @@ import listAppointments from './api/appointments/list.js';
 import createAppointment from './api/appointments/create.js';
 import updateAppointment from './api/appointments/update.js';
 import availableDates from './api/appointments/available-dates.js';
+import sendNotification from './api/notifications/send.js';
+import listNotifications from './api/notifications/list.js';
 
 // Rotas
 app.post('/api/auth/login', loginHandler);
@@ -27,6 +29,8 @@ app.get('/api/appointments/list', listAppointments);
 app.post('/api/appointments/create', createAppointment);
 app.put('/api/appointments/update', updateAppointment);
 app.get('/api/appointments/available-dates', availableDates);
+app.post('/api/notifications/send', sendNotification);
+app.get('/api/notifications/list', listNotifications);
 
 // Iniciar servidor
 app.listen(PORT, () => {
