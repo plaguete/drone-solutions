@@ -21,6 +21,8 @@ import updateAppointment from './api/appointments/update.js';
 import availableDates from './api/appointments/available-dates.js';
 import sendNotification from './api/notifications/send.js';
 import listNotifications from './api/notifications/list.js';
+import subscribePush from './api/notifications/subscribe.js';
+import pushNotification from './api/notifications/push.js';
 
 // Rotas
 app.post('/api/auth/login', loginHandler);
@@ -31,6 +33,8 @@ app.put('/api/appointments/update', updateAppointment);
 app.get('/api/appointments/available-dates', availableDates);
 app.post('/api/notifications/send', sendNotification);
 app.get('/api/notifications/list', listNotifications);
+app.post('/api/notifications/subscribe', subscribePush);
+app.post('/api/notifications/push', pushNotification);
 
 // Iniciar servidor
 app.listen(PORT, () => {

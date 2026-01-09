@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import NewAppointment from './pages/NewAppointment';
 import MyOrders from './pages/MyOrders';
 import AdminDashboard from './pages/AdminDashboard';
@@ -86,6 +87,12 @@ function App() {
             </AuthRoute>
           } />
           
+          <Route path="/esqueci-senha" element={
+            <AuthRoute>
+              <ForgotPassword />
+            </AuthRoute>
+          } />
+          
           <Route path="/agendar" element={
             <ProtectedRoute>
               <NewAppointment />
@@ -95,6 +102,12 @@ function App() {
           <Route path="/meus-pedidos" element={
             <ProtectedRoute>
               <MyOrders />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/appointment-confirmation/:id" element={
+            <ProtectedRoute>
+              <AppointmentConfirmation />
             </ProtectedRoute>
           } />
           

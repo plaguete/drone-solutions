@@ -129,7 +129,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="text-center">
+            <div className="text-center">
             <p className="text-sm text-slate-600">
               Não tem uma conta?{' '}
               <Link to="/register" className="font-bold text-blue-600 hover:text-blue-700">
@@ -137,9 +137,9 @@ export default function Login() {
               </Link>
             </p>
             <p className="text-xs text-slate-500 mt-2">
-              Problemas para acessar?{' '}
-              <Link to="/" className="text-blue-500 hover:underline">
-                Entre em contato
+              Esqueceu sua senha?{' '}
+              <Link to="/esqueci-senha" className="text-blue-500 hover:underline">
+                Recuperar senha
               </Link>
             </p>
           </div>

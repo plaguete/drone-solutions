@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import {
-  Bell, CheckCircle, Plus, LogOut, MessageCircle, Info, Check, Clock, User
+  Bell, CheckCircle, Plus, LogOut, MessageCircle, Info, Calendar, MapPin, Clock
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -22,31 +23,62 @@ const NotificationItem = ({ notification, onRead }) => (
 export default function AppointmentConfirmation() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { subscribe, isSupported } = usePushNotifications();
+  const { id } = useParams();
+  const [appointment, setAppointment] = useState(null);
+  const [notificationOptIn, setNotificationOptIn] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const notificationRef = useRef(null);
-  const lastIdRef = useRef(0);
 
   useEffect(() => {
     if (Notification.permission === 'default') Notification.requestPermission();
-    const interval = setInterval(fetchNotifications, 5000); // Polling a cada 5s
+    const interval = setInterval(fetchNotifications, 5000);
     fetchNotifications();
+    
+    // Fetch appointment details if ID is provided
+    if (id) {
+      fetchAppointmentDetails();
+    }
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [id]);
+
+  const fetchAppointmentDetails = async () => {
+    try {
+      const token = localStorage.getItem('@droneApp:token');
+      const response = await fetch(`/api/appointments/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAppointment(data);
+      } else {
+        console.warn('Could not fetch appointment details, showing generic confirmation');
+      }
+    } catch (error) {
+      console.error('Error fetching appointment:', error);
+    }
+  };
+
+  const handleNotificationSubscription = async () => {
+    if (notificationOptIn && isSupported) {
+      const success = await subscribe();
+      if (success) {
+        toast.success('Notificações ativadas! Você receberá atualizações mesmo fora do site.');
+      } else {
+        toast.error('Não foi possível ativar as notificações. Por favor, tente novamente.');
+      }
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
-        // Simulação de Fetch (Substitua pela sua rota: /api/notifications?user_id=...)
-        // Como o usuário pediu para "transcrever os códigos", estou mantendo a lógica de UI, 
-        // mas aqui deve entrar o fetch real no seu backend
-        // const res = await fetch(`/api/notifications?user_id=${user.id}`);
-        // const data = await res.json();
-        
-        // MOCK PARA UI FUNCIONAR NO TESTE
-        // Em produção, remova esse mock e use o fetch acima
-        const mockData = notifications.length ? notifications : [{ id: 1, message: 'Bem-vindo ao sistema!', type: 'info', created_at: new Date(), is_read: false }];
-        setNotifications(mockData);
-        
+      const mockData = notifications.length ? notifications : [{ id: 1, message: 'Bem-vindo ao sistema!', type: 'info', created_at: new Date(), is_read: false }];
+      setNotifications(mockData);
     } catch (e) { console.error(e); }
   };
 
@@ -61,7 +93,7 @@ export default function AppointmentConfirmation() {
       <nav className="bg-white border-b sticky top-0 z-50 h-16 px-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">D</div>
-            <span className="font-bold text-lg text-slate-800 hidden sm:block">DroneApp</span>
+            <span className="font-bold text-lg text-slate-800 hidden sm:block">DroneService</span>
         </div>
         <div className="flex items-center gap-3">
             <button onClick={() => navigate('/agendar')} className="hidden md:flex items-center gap-1 text-sm font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-full transition"><Plus size={18}/> Novo Pedido</button>
@@ -90,11 +122,85 @@ export default function AppointmentConfirmation() {
              <CheckCircle className="text-green-600" size={48} />
           </div>
           <h1 className="text-3xl font-extrabold text-slate-800 mb-4">Pedido Enviado!</h1>
-          <p className="text-slate-500 mb-8 leading-relaxed">Seu pedido foi encaminhado para nossa central. Você receberá notificações assim que um técnico analisar sua solicitação.</p>
+          <p className="text-slate-500 mb-8 leading-relaxed">Obrigada pela confiança! Seu pedido foi encaminhado para nossa equipe.</p>
+          
+          {/* Appointment Details */}
+          {appointment && (
+            <div className="bg-blue-50 rounded-xl p-6 mb-6 text-left">
+              <h3 className="font-bold text-slate-800 mb-4">Detalhes do Agendamento</h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Calendar className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Data</p>
+                    <p className="text-slate-600">{new Date(appointment.scheduled_date).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                </div>
+                {appointment.scheduled_time && (
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">Hora</p>
+                      <p className="text-slate-600">{appointment.scheduled_time}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center mt-0.5">
+                    <span className="text-white text-xs">D</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">Serviço</p>
+                    <p className="text-slate-600">{appointment.service_type}</p>
+                  </div>
+                </div>
+                {appointment.location_text && (
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">Localização</p>
+                      <p className="text-slate-600">{appointment.location_text}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* Notification Opt-in */}
+          <div className="bg-blue-50 rounded-xl p-4 mb-6">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="w-5 h-5 text-blue-600 rounded"
+                checked={notificationOptIn}
+                onChange={(e) => setNotificationOptIn(e.target.checked)}
+              />
+              <span className="text-sm text-slate-700 font-medium">
+                Receber notificações sobre atualizações do serviço
+              </span>
+            </label>
+          </div>
           
           <div className="grid sm:grid-cols-2 gap-4">
-             <button onClick={() => navigate('/agendar')} className="py-3 bg-slate-100 font-bold text-slate-600 rounded-xl hover:bg-slate-200 transition">Novo Pedido</button>
-             <button onClick={() => navigate('/meus-pedidos')} className="py-3 bg-blue-600 font-bold text-white rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">Meus Pedidos</button>
+             <button 
+               onClick={() => {
+                 handleNotificationSubscription();
+                 navigate('/');
+               }} 
+               className="py-3 bg-slate-100 font-bold text-slate-600 rounded-xl hover:bg-slate-200 transition"
+             >
+               Ir para tela inicial
+             </button>
+             <button 
+               onClick={() => {
+                 handleNotificationSubscription();
+                 navigate('/agendar');
+               }} 
+               className="py-3 bg-green-600 font-bold text-white rounded-xl hover:bg-green-700 transition shadow-lg shadow-green-200"
+             >
+               Agendar outro serviço
+             </button>
           </div>
         </div>
       </main>
