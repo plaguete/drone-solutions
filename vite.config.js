@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: '/',
   plugins: [react({
     // Adicione estas opções para Mac
     babel: {
@@ -14,6 +15,8 @@ export default defineConfig({
     open: true
   },
   build: {
-    chunkSizeWarningLimit: 1600
+    chunkSizeWarningLimit: 1600,
+    outDir: 'dist',
+    assetsDir: 'assets'
   }
 })

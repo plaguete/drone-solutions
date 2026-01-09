@@ -16,6 +16,7 @@ export function AuthProvider({ children }) {
       if (parts.length !== 3) return null;
       
       const base64Url = parts[1];
+      
       // Substitui caracteres específicos do base64url
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       
@@ -33,7 +34,7 @@ export function AuthProvider({ children }) {
       
       return JSON.parse(jsonPayload);
     } catch (e) {
-      console.error("Erro ao decodificar token:", e);
+      // Silencioso para não poluir console
       return null;
     }
   }

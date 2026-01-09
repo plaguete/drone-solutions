@@ -27,6 +27,10 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
 
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -45,10 +49,10 @@ class ErrorBoundary extends React.Component {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  //<React.StrictMode>
-    //<ErrorBoundary>
+  <React.StrictMode>
+    <ErrorBoundary>
       <App />
-    //</ErrorBoundary>
- // </React.StrictMode>,
+    </ErrorBoundary>
+  </React.StrictMode>,
 )
 
